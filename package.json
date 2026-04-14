@@ -2,39 +2,37 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev:styles": "npx tailwindcss -i resources/css/index.css -o resources/dist/filament-custom-attribute-file-upload.css --postcss --watch",
-        "dev:scripts": "node bin/build.js --dev",
-        "build:styles": "npx tailwindcss -i resources/css/index.css -o resources/dist/filament-custom-attribute-file-upload.css --postcss --minify && npm run purge",
-        "build:scripts": "node bin/build.js",
-        "purge": "filament-purge -i resources/dist/filament-custom-attribute-file-upload.css -o resources/dist/filament-custom-attribute-file-upload.css -v 3.x",
-        "dev": "npm-run-all --parallel dev:*",
-        "build": "npm-run-all build:*"
+        "dev": "node bin/build.js --dev",
+        "build": "node bin/build.js",
+        "format": "prettier --write 'resources/**/*.blade.php' 'resources/**/*.css' 'resources/**/*.js'",
+        "format:check": "prettier --check 'resources/**/*.blade.php' 'resources/**/*.css' 'resources/**/*.js'"
     },
     "devDependencies": {
         "@awcodes/filament-plugin-purge": "^1.1.1",
-        "@tailwindcss/forms": "^0.5.4",
-        "@tailwindcss/typography": "^0.5.9",
-        "autoprefixer": "^10.4.14",
-        "esbuild": "^0.19.2",
+        "@tailwindcss/forms": "^0.5.9",
+        "@tailwindcss/typography": "^0.5.15",
+        "autoprefixer": "^10.4.20",
+        "esbuild": "^0.25.0",
         "npm-run-all": "^4.1.5",
-        "postcss": "^8.4.26",
+        "postcss": "^8.4.45",
         "postcss-import": "^15.1.0",
-        "prettier": "^2.7.1",
-        "prettier-plugin-tailwindcss": "^0.1.13",
-        "tailwindcss": "^3.3.3"
+        "prettier": "^3.3.3",
+        "prettier-plugin-blade": "^2.1.21",
+        "prettier-plugin-tailwindcss": "^0.6.6",
+        "tailwindcss": "^3.4.10"
     },
     "dependencies": {
-        "cropperjs": "1.5.13",
-        "filepond": "4.31.1",
+        "cropperjs": "1.6.2",
+        "filepond": "^4.32.7",
         "filepond-plugin-file-metadata": "^1.0.8",
-        "filepond-plugin-file-validate-size": "2.2.4",
-        "filepond-plugin-file-validate-type": "1.2.6",
-        "filepond-plugin-image-crop": "2.0.6",
-        "filepond-plugin-image-edit": "1.6.3",
+        "filepond-plugin-file-validate-size": "^2.2.8",
+        "filepond-plugin-file-validate-type": "^1.2.8",
+        "filepond-plugin-image-crop": "^2.0.6",
+        "filepond-plugin-image-edit": "^1.6.3",
         "filepond-plugin-image-exif-orientation": "^1.0.11",
-        "filepond-plugin-image-preview": "4.6.7",
-        "filepond-plugin-image-resize": "2.0.10",
-        "filepond-plugin-image-transform": "3.8.6",
-        "filepond-plugin-media-preview": "1.0.9"
+        "filepond-plugin-image-preview": "^4.6.11",
+        "filepond-plugin-image-resize": "^2.0.10",
+        "filepond-plugin-image-transform": "^3.8.7",
+        "mime": "^4.0.0"
     }
 }

@@ -101,8 +101,7 @@ class FilamentCustomAttributeFileUploadServiceProvider extends PackageServicePro
     {
         return [
             AlpineComponent::make('filament-custom-attribute-file-upload', __DIR__ . '/../resources/dist/filament-custom-attribute-file-upload.js'),
-            Css::make('filament-custom-attribute-file-upload-styles', __DIR__ . '/../resources/dist/filament-custom-attribute-file-upload.css'),
-            Js::make('filament-custom-attribute-file-upload-scripts', __DIR__ . '/../resources/dist/filament-custom-attribute-file-upload.js'),
+            //Css::make('filament-custom-attribute-file-upload-styles', __DIR__ . '/../resources/dist/filament-custom-attribute-file-upload.css'),
         ];
     }
 
