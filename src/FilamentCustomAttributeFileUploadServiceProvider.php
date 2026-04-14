@@ -7,7 +7,6 @@ use ElmudoDev\FilamentCustomAttributeFileUpload\Testing\TestsFilamentCustomAttri
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Assets\Css;
-use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Filesystem\Filesystem;
@@ -101,7 +100,7 @@ class FilamentCustomAttributeFileUploadServiceProvider extends PackageServicePro
     {
         return [
             AlpineComponent::make('filament-custom-attribute-file-upload', __DIR__ . '/../resources/dist/filament-custom-attribute-file-upload.js'),
-            //Css::make('filament-custom-attribute-file-upload-styles', __DIR__ . '/../resources/dist/filament-custom-attribute-file-upload.css'),
+            // Css::make('filament-custom-attribute-file-upload-styles', __DIR__ . '/../resources/dist/filament-custom-attribute-file-upload.css'),
         ];
     }
 
