@@ -31,7 +31,7 @@
     <div
         x-load
         x-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('filament-custom-attribute-file-upload', 'elmudo-dev/filament-custom-attribute-file-upload') }}"
-        x-data="fileUploadFormComponent({
+        x-data="fileUploadFormComponentCustomAttribute({
                     acceptedFileTypes: @js($getAcceptedFileTypes()),
                     automaticallyCropImagesAspectRatio: @js($automaticallyCropImagesAspectRatio),
                     automaticallyOpenImageEditorForAspectRatio: @js($getAutomaticallyOpenImageEditorForAspectRatio()),

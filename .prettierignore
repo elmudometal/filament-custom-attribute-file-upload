@@ -1,0 +1,4 @@
+resources/dist
+vendor
+node_modules
+dist

@@ -10,8 +10,8 @@ import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
 import FilePondPluginImageResize from 'filepond-plugin-image-resize'
 import FilePondPluginImageTransform from 'filepond-plugin-image-transform'
 import FilePondPluginMediaPreview from './filepond-plugin-media-preview.js'
-import FilePondPluginImageCaption from './filepond-plugin-image-caption.js';
-import FilePondPluginFileMetadata from 'filepond-plugin-file-metadata';
+import FilePondPluginImageCaption from './filepond-plugin-image-caption.js'
+import FilePondPluginFileMetadata from 'filepond-plugin-file-metadata'
 
 FilePond.registerPlugin(FilePondPluginFileValidateSize)
 FilePond.registerPlugin(FilePondPluginFileValidateType)
@@ -23,11 +23,11 @@ FilePond.registerPlugin(FilePondPluginImageResize)
 FilePond.registerPlugin(FilePondPluginImageTransform)
 FilePond.registerPlugin(FilePondPluginMediaPreview)
 FilePond.registerPlugin(FilePondPluginImageCaption)
-FilePond.registerPlugin(FilePondPluginFileMetadata);
+FilePond.registerPlugin(FilePondPluginFileMetadata)
 
 window.FilePond = FilePond
 
-export default function fileUploadFormComponent({
+export default function fileUploadFormComponentCustomAttribute({
     acceptedFileTypes,
     automaticallyCropImagesAspectRatio,
     automaticallyOpenImageEditorForAspectRatio,
@@ -168,13 +168,14 @@ export default function fileUploadFormComponent({
             FilePond.setOptions(locales[locale] ?? locales['en'])
 
             this.pond = FilePond.create(this.$refs.input, {
-        // Caption (custom plugin)
-        imageCaptionPlaceholder: 'Description...',
-        imageCaptionMaxLength: 255,
-        fileMetadataObject: {
-          title: 'Un título personalizado',
-          description: 'Esta es una descripción personalizada',
-        },
+                // Caption (custom plugin)
+                addImageCaption: true,
+                imageCaptionPlaceholder: 'Description...',
+                imageCaptionMaxLength: 255,
+                fileMetadataObject: {
+                    title: 'Un título personalizado',
+                    description: 'Esta es una descripción personalizada',
+                },
                 acceptedFileTypes,
                 allowImageExifOrientation: shouldOrientImageFromExif,
                 allowPaste: isPasteable,
@@ -509,10 +510,10 @@ export default function fileUploadFormComponent({
                     source: uploadedFile.url,
                     options: {
                         type: 'local',
-            metadata: {
-              caption: uploadedFile.name,
-              uuid: uploadedFile.uuid,
-            },
+                        metadata: {
+                            caption: uploadedFile.name,
+                            uuid: uploadedFile.uuid,
+                        },
                         ...(!uploadedFile.type ||
                         (isPreviewable &&
                             (/^audio/.test(uploadedFile.type) ||
@@ -930,7 +931,6 @@ export default function fileUploadFormComponent({
     }
 }
 
-
 import ar from 'filepond/locale/ar-ar'
 import az from 'filepond/locale/az-az'
 import ca from 'filepond/locale/ca-ca'
@@ -972,7 +972,6 @@ import zh_CN from 'filepond/locale/zh-cn'
 import zh_TW from 'filepond/locale/zh-tw'
 
 const locales = {
-
     ar,
     az,
     ca,

@@ -50,13 +50,7 @@ class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFile
             $component->getLivewire()->data['captions'] = $captions;
         });
 
-        $this->afterStateHydrated(static function (BaseFileUpload $component, string | array | null $state): void {
-            if (is_array($state)) {
-                return;
-            }
-
-            $component->state([]);
-        });
+        $this->afterStateHydrated(null);
 
         $this->beforeStateDehydrated(null);
 
@@ -77,7 +71,7 @@ class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFile
 
                 try {
                     $url = $media?->getTemporaryUrl(
-                        now()->addMinutes(5),
+                        now()->addMinutes(30)->endOfHour(),
                         (filled($conversion) && $media->hasGeneratedConversion($conversion)) ? $conversion : '',
                     );
                 } catch (Throwable $exception) {
