@@ -3,7 +3,6 @@
 namespace ElmudoDev\FilamentCustomAttributeFileUpload\Forms\Components;
 
 use Closure;
-use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
