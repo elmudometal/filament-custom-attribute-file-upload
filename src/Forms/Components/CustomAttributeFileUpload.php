@@ -39,7 +39,7 @@ class CustomAttributeFileUpload extends FileUpload
 
                     try {
                         return $component->getDisk()->exists($file['file'] ?? $file);
-                    } catch (UnableToCheckFileExistence $exception) {
+                    } catch (UnableToCheckFileExistence) {
                         return false;
                     }
                 })
@@ -66,7 +66,7 @@ class CustomAttributeFileUpload extends FileUpload
                     if (! $storage->exists($file)) {
                         return null;
                     }
-                } catch (UnableToCheckFileExistence $exception) {
+                } catch (UnableToCheckFileExistence) {
                     return null;
                 }
             }
@@ -79,7 +79,7 @@ class CustomAttributeFileUpload extends FileUpload
                         $file,
                         now()->addMinutes(5),
                     );
-                } catch (Throwable $exception) {
+                } catch (Throwable) {
                     // This driver does not support creating temporary URLs.
                 }
             }
@@ -121,7 +121,7 @@ class CustomAttributeFileUpload extends FileUpload
 
             $callback = $this->getUploadedFileUsing;
 
-            if (! $callback) {
+            if (! $callback instanceof \Closure) {
                 return [$fileKey => null];
             }
 

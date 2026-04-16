@@ -26,7 +26,7 @@ class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFile
             $media = $record->load('media')->getMedia($component->getCollection() ?? 'default')
                 ->when(
                     $component->hasMediaFilter(),
-                    fn (Collection $media) => $component->filterMedia($media)
+                    fn (Collection $media): Collection => $component->filterMedia($media)
                 )
                 ->when(
                     ! $component->isMultiple(),
@@ -38,6 +38,8 @@ class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFile
                     return [$uuid => ['uuid' => $uuid, 'name' => $media->getAttributeValue('name')]];
                 })
                 ->toArray();
+
+            // Caption (custom plugin)
             $uuids = [];
             $captions = [];
             foreach ($media as $item) {
@@ -45,7 +47,7 @@ class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFile
                 $captions[$item['uuid']] = ['caption' => $item['name']];
             }
 
-            $component->state($uuids);
+            $component->rawState($uuids);
             $component->getLivewire()->data['captions'] = $captions;
         });
 
@@ -73,7 +75,7 @@ class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFile
                         now()->addMinutes(30)->endOfHour(),
                         (filled($conversion) && $media->hasGeneratedConversion($conversion)) ? $conversion : '',
                     );
-                } catch (Throwable $exception) {
+                } catch (Throwable) {
                     // This driver does not support creating temporary URLs.
                 }
             }
@@ -93,7 +95,7 @@ class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFile
             ];
         });
 
-        $this->saveRelationshipsUsing(static function (CustomAttributeSpatieMediaLibraryFileUpload $component) {
+        $this->saveRelationshipsUsing(static function (CustomAttributeSpatieMediaLibraryFileUpload $component): void {
             $component->deleteAbandonedFiles();
             $component->saveUploadedFiles();
         });
@@ -107,12 +109,14 @@ class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFile
                 if (! $file->exists()) {
                     return null;
                 }
-            } catch (UnableToCheckFileExistence $exception) {
+            } catch (UnableToCheckFileExistence) {
                 return null;
             }
 
             /** @var FileAdder $mediaAdder */
             $mediaAdder = $record->addMediaFromString($file->get());
+
+            // Caption (custom plugin)
             $uuid = '';
             $data = $component->getLivewire()->data;
 
@@ -123,18 +127,21 @@ class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFile
             }
 
             $filename = $component->getUploadedFileNameForStorage($file);
+            // Caption (custom plugin)
             $component->getMediaName($data['captions'][$uuid]['caption'] ?? '');
+
             $media = $mediaAdder
-                ->addCustomHeaders($component->getCustomHeaders())
+                ->addCustomHeaders([...['ContentType' => $file->getMimeType()], ...$component->getCustomHeaders()])
                 ->usingFileName($filename)
                 ->usingName($data['captions'][$uuid]['caption'] ?? '')
                 ->storingConversionsOnDisk($component->getConversionsDisk() ?? '')
-                ->withCustomProperties($component->getCustomProperties())
+                ->withCustomProperties($component->getCustomProperties($file))
                 ->withManipulations($component->getManipulations())
                 ->withResponsiveImagesIf($component->hasResponsiveImages())
                 ->withProperties($component->getProperties())
                 ->toMediaCollection($component->getCollection() ?? 'default', $component->getDiskName());
 
+            // Caption (custom plugin)
             if (isset($data['captions'][$uuid])) {
                 // Copiar el contenido del antiguo uuid al nuevo uuid de la tabla media
                 $component->getLivewire()->data['captions'][$media->getAttributeValue('uuid')] = $data['captions'][$uuid];
@@ -143,16 +150,16 @@ class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFile
             return $media->getAttributeValue('uuid');
         });
 
-        $this->reorderUploadedFilesUsing(static function (CustomAttributeSpatieMediaLibraryFileUpload $component, ?Model $record, array $state): array {
-
+        $this->reorderUploadedFilesUsing(static function (SpatieMediaLibraryFileUpload $component, ?Model $record, array $rawState): array {
+            // Caption (custom plugin)
             $data = $component->getLivewire()->data;
-            $uuids = array_filter(array_values($state));
+            $uuids = array_filter(array_values($rawState));
 
             $mediaClass = ($record && method_exists($record, 'getMediaModel')) ? $record->getMediaModel() : null;
             $mediaClass ??= config('media-library.media_model', Media::class);
 
+            // Caption (custom plugin)
             $medias = $mediaClass::query()->whereIn('uuid', $uuids)->get();
-
             foreach ($medias as $media) {
                 $media->name = $data['captions'][$media->getAttributeValue('uuid')]['caption'] ?? '';
                 $media->save();
@@ -164,7 +171,7 @@ class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFile
                 ...$mappedIds,
             ]);
 
-            return $state;
+            return $rawState;
         });
     }
 

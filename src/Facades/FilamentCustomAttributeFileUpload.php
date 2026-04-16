@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ElmudoDev\FilamentCustomAttributeFileUpload\Facades;
 
 use Illuminate\Support\Facades\Facade;
