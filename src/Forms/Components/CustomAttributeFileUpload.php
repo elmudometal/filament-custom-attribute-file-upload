@@ -12,7 +12,8 @@ use Throwable;
 
 class CustomAttributeFileUpload extends FileUpload
 {
-    protected string $view = 'filament-custom-attribute-file-upload::custom-attribute-file-upload';
+    /** @var view-string */
+    protected string $view = 'filament-custom-attribute-file-upload::custom-attribute-file-upload'; // @phpstan-ignore property.defaultValue
 
     protected function setUp(): void
     {
@@ -49,9 +50,10 @@ class CustomAttributeFileUpload extends FileUpload
             $component->state($files);
 
             $captions = [];
-            foreach ($state ?? [] as $fileKey => $file) {
+            foreach ($state as $fileKey => $file) {
                 $captions[$fileKey] = ['caption' => $file['caption']];
             }
+            /** @phpstan-ignore property.notFound */
             $component->getLivewire()->data['captions'] = $captions;
         });
 
@@ -95,6 +97,7 @@ class CustomAttributeFileUpload extends FileUpload
         });
 
         $this->reorderUploadedFilesUsing(static function (CustomAttributeFileUpload $component, array $state): array {
+            /** @phpstan-ignore property.notFound */
             $data = $component->getLivewire()->data;
 
             foreach ($state as $key => $item) {

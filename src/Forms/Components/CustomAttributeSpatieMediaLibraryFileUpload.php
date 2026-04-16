@@ -15,7 +15,8 @@ use Throwable;
 
 class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFileUpload
 {
-    protected string $view = 'filament-custom-attribute-file-upload::custom-attribute-file-upload';
+    /** @var view-string */
+    protected string $view = 'filament-custom-attribute-file-upload::custom-attribute-file-upload'; // @phpstan-ignore property.defaultValue
 
     protected function setUp(): void
     {
@@ -48,6 +49,7 @@ class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFile
             }
 
             $component->rawState($uuids);
+            /** @phpstan-ignore property.notFound */
             $component->getLivewire()->data['captions'] = $captions;
         });
 
@@ -116,24 +118,19 @@ class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFile
             /** @var FileAdder $mediaAdder */
             $mediaAdder = $record->addMediaFromString($file->get());
 
-            // Caption (custom plugin)
-            $uuid = '';
-            $data = $component->getLivewire()->data;
-
-            foreach ($component->getState() as $index => $item) {
-                if ($item == $file) {
-                    $uuid = $index;
-                }
-            }
-
             $filename = $component->getUploadedFileNameForStorage($file);
             // Caption (custom plugin)
-            $component->getMediaName($data['captions'][$uuid]['caption'] ?? '');
+            $uuid = '';
+            /** @phpstan-ignore property.notFound */
+            $data = $component->getLivewire()->data;
+            $uuid = array_search($file, $data[$component->name], true) ?: '';
+            $caption = (string) data_get($data, "captions.{$uuid}.caption", '');
+            $component->getMediaName($caption);
 
             $media = $mediaAdder
                 ->addCustomHeaders([...['ContentType' => $file->getMimeType()], ...$component->getCustomHeaders()])
                 ->usingFileName($filename)
-                ->usingName($data['captions'][$uuid]['caption'] ?? '')
+                ->usingName($caption)
                 ->storingConversionsOnDisk($component->getConversionsDisk() ?? '')
                 ->withCustomProperties($component->getCustomProperties($file))
                 ->withManipulations($component->getManipulations())
@@ -141,19 +138,30 @@ class CustomAttributeSpatieMediaLibraryFileUpload extends SpatieMediaLibraryFile
                 ->withProperties($component->getProperties())
                 ->toMediaCollection($component->getCollection() ?? 'default', $component->getDiskName());
 
+            // fix order
+            $newUuid = $media->getAttributeValue('uuid');
+            $data['gallery'] = collect($data['gallery'])
+                ->mapWithKeys(function ($value, $key) use ($uuid, $newUuid) {
+                    return [$key === $uuid ? $newUuid : $key => $value];
+                })
+                ->toArray();
+            $component->rawState($data['gallery']);
+
             // Caption (custom plugin)
             if (isset($data['captions'][$uuid])) {
                 // Copiar el contenido del antiguo uuid al nuevo uuid de la tabla media
-                $component->getLivewire()->data['captions'][$media->getAttributeValue('uuid')] = $data['captions'][$uuid];
+                /** @phpstan-ignore property.notFound */
+                $component->getLivewire()->data['captions'][$media->getAttributeValue('uuid')]['caption'] = $caption;
             }
 
-            return $media->getAttributeValue('uuid');
+            return $newUuid;
         });
 
         $this->reorderUploadedFilesUsing(static function (SpatieMediaLibraryFileUpload $component, ?Model $record, array $rawState): array {
             // Caption (custom plugin)
+            /** @phpstan-ignore property.notFound */
             $data = $component->getLivewire()->data;
-            $uuids = array_filter(array_values($rawState));
+            $uuids = array_filter(array_keys($rawState));
 
             $mediaClass = ($record && method_exists($record, 'getMediaModel')) ? $record->getMediaModel() : null;
             $mediaClass ??= config('media-library.media_model', Media::class);

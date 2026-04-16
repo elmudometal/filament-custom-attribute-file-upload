@@ -88,7 +88,7 @@ class FilamentCustomAttributeFileUploadServiceProvider extends PackageServicePro
         Testable::mixin(new TestsFilamentCustomAttributeFileUpload);
     }
 
-    protected function getAssetPackageName(): ?string
+    protected function getAssetPackageName(): string
     {
         return 'elmudo-dev/filament-custom-attribute-file-upload';
     }
