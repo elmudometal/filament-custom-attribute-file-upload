@@ -9,10 +9,10 @@
         "filament-plugin",
         "filament-custom-attribute-file-upload"
     ],
-    "homepage": "https://github.com/elmudo-dev/filament-custom-attribute-file-upload",
+    "homepage": "https://github.com/elmudometal/filament-custom-attribute-file-upload",
     "support": {
-        "issues": "https://github.com/elmudo-dev/filament-custom-attribute-file-upload/issues",
-        "source": "https://github.com/elmudo-dev/filament-custom-attribute-file-upload"
+        "issues": "https://github.com/elmudometal/filament-custom-attribute-file-upload/issues",
+        "source": "https://github.com/elmudometal/filament-custom-attribute-file-upload"
     },
     "license": "MIT",
     "authors": [

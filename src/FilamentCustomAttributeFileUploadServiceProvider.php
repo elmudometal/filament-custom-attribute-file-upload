@@ -35,7 +35,7 @@ class FilamentCustomAttributeFileUploadServiceProvider extends PackageServicePro
                     ->publishConfigFile()
                     ->publishMigrations()
                     ->askToRunMigrations()
-                    ->askToStarRepoOnGitHub('elmudo-dev/filament-custom-attribute-file-upload');
+                    ->askToStarRepoOnGitHub('elmudometal/filament-custom-attribute-file-upload');
             });
 
         $configFileName = $package->shortName();
