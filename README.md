@@ -26,6 +26,8 @@ composer require elmudo-dev/filament-custom-attribute-file-upload
 After setting up a custom theme add the plugin's views to your theme css file or your app's css file if using the standalone packages.
 
 ```css
+/** Custom attribute file upload*/
+@import '../../../../vendor/elmudo-dev/filament-custom-attribute-file-upload/resources/css/index.css';
 @source '../../../../vendor/elmudo-dev/filament-custom-attribute-file-upload/resources/**/*.blade.php';
 ```
 
