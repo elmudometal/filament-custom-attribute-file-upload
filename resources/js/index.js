@@ -84,6 +84,8 @@ export default function fileUploadFormComponentCustomAttribute({
     uploadUsing,
 }) {
     return {
+        activeUploads: 0,
+
         fileKeyIndex: {},
 
         pond: null,
@@ -227,6 +229,7 @@ export default function fileUploadFormComponentCustomAttribute({
                         progress,
                         abort,
                     ) => {
+                        this.activeUploads++
                         this.shouldUpdateState = false
 
                         let fileKey = (
@@ -243,20 +246,30 @@ export default function fileUploadFormComponentCustomAttribute({
                             ).toString(16),
                         )
 
+                        let handleUploadEnd = () => {
+                            this.activeUploads--
+                            if (this.activeUploads <= 0) {
+                                this.shouldUpdateState = true
+                            }
+                        }
+
                         uploadUsing(
                             fileKey,
                             file,
                             (fileKey) => {
-                                this.shouldUpdateState = true
-
+                                handleUploadEnd()
                                 load(fileKey)
                             },
-                            error,
+                            (...errorArgs) => {
+                                handleUploadEnd()
+                                error(...errorArgs)
+                            },
                             progress,
                         )
 
                         return {
                             abort: () => {
+                                handleUploadEnd()
                                 cancelUploadUsing(fileKey)
                                 abort()
                             },
@@ -319,7 +332,7 @@ export default function fileUploadFormComponentCustomAttribute({
                 if (
                     this.state !== null &&
                     Object.values(this.state).filter((file) =>
-                        file.startsWith('livewire-file:'),
+                        typeof file === 'string' && file.startsWith('livewire-file:'),
                     ).length
                 ) {
                     this.lastState = null
@@ -377,43 +390,104 @@ export default function fileUploadFormComponentCustomAttribute({
                 this.insertOpenLink(fileItem)
             })
 
+            let isProcessing = false
+
             this.pond.on('addfilestart', async (file) => {
                 this.error = null
 
-                if (file.status !== FilePond.FileStatus.PROCESSING_QUEUED) {
-                    return
+                if (file.status === FilePond.FileStatus.PROCESSING_QUEUED) {
+                    if (!isProcessing) {
+                        isProcessing = true
+                        this.dispatchFormEvent('form-processing-started', {
+                            message: uploadingMessage,
+                        })
+                    }
                 }
-
-                this.dispatchFormEvent('form-processing-started', {
-                    message: uploadingMessage,
-                })
             })
 
-            const handleFileProcessing = async () => {
-                if (
-                    this.pond
-                        .getFiles()
-                        .filter(
-                            (file) =>
-                                file.status ===
-                                    FilePond.FileStatus.PROCESSING ||
-                                file.status ===
-                                    FilePond.FileStatus.PROCESSING_QUEUED,
-                        ).length
-                ) {
-                    return
-                }
+            const checkProcessingFinished = async () => {
+                const files = this.pond?.getFiles() || []
+                const hasProcessing = files.some(
+                    (file) =>
+                        file.status === FilePond.FileStatus.PROCESSING ||
+                        file.status === FilePond.FileStatus.PROCESSING_QUEUED,
+                )
 
-                this.dispatchFormEvent('form-processing-finished')
+                if (!hasProcessing && isProcessing) {
+                    isProcessing = false
+                    this.dispatchFormEvent('form-processing-finished')
+                }
             }
 
-            this.pond.on('processfile', handleFileProcessing)
+            this.pond.on('processfile', checkProcessingFinished)
+            this.pond.on('processfiles', checkProcessingFinished)
+            this.pond.on('processfileabort', checkProcessingFinished)
+            this.pond.on('processfilerevert', checkProcessingFinished)
+            this.pond.on('removefile', checkProcessingFinished)
 
-            this.pond.on('processfileabort', handleFileProcessing)
+            // Caption integration: associate fileKey with caption input after upload completes
+            this.pond.on('processfile', (error, fileItem) => {
+                if (error || !fileItem) return
 
-            this.pond.on('processfilerevert', handleFileProcessing)
+                const fileKey = fileItem.serverId
+                if (!fileKey) return
 
-            this.pond.on('removefile', handleFileProcessing)
+                const assignFileKey = () => {
+                    const itemEl = document.getElementById(`filepond--item-${fileItem.id}`)
+                    const input =
+                        this.$el.querySelector(`input[data-filepond-id="${fileItem.id}"]`) ||
+                        itemEl?.querySelector('.filepond--image-caption-input') ||
+                        itemEl?.querySelector('input[type="text"]')
+
+                    if (input) {
+                        input.dataset.fileKey = fileKey
+                        input.disabled = false
+                        input.removeAttribute('disabled')
+
+                        if (input.value) {
+                            this.$wire.set(
+                                `data.captions.${fileKey}.caption`,
+                                input.value,
+                                false,
+                            )
+                        }
+                    }
+                }
+
+                assignFileKey()
+                setTimeout(assignFileKey, 50)
+                setTimeout(assignFileKey, 200)
+            })
+
+            // Caption integration: listen for caption changes and sync to Livewire (deferred)
+            this.$el.addEventListener('caption-change', (e) => {
+                const { fileKey, value } = e.detail
+                this.$wire.set(
+                    `data.captions.${fileKey}.caption`,
+                    value,
+                    false,
+                )
+            })
+
+            // Sync all captions when form submits
+            this.$el.closest('form')?.addEventListener('submit', () => {
+                this.pond?.getFiles()?.forEach((fileItem) => {
+                    const fileKey = fileItem.serverId || fileItem.getMetadata('uuid')
+                    if (!fileKey) return
+
+                    const input =
+                        this.$el.querySelector(`input[data-filepond-id="${fileItem.id}"]`) ||
+                        this.$el.querySelector(`input[data-file-key="${fileKey}"]`)
+
+                    if (input && input.value !== undefined) {
+                        this.$wire.set(
+                            `data.captions.${fileKey}.caption`,
+                            input.value,
+                            false,
+                        )
+                    }
+                })
+            })
 
             this.pond.on('warning', (warning) => {
                 if (warning.body === 'Max files') {
@@ -473,12 +547,19 @@ export default function fileUploadFormComponentCustomAttribute({
         },
 
         dispatchFormEvent(name, detail = {}) {
+            const eventOptions = {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                detail,
+            }
+
             this.$el.closest('form')?.dispatchEvent(
-                new CustomEvent(name, {
-                    composed: true,
-                    cancelable: true,
-                    detail,
-                }),
+                new CustomEvent(name, eventOptions),
+            )
+
+            window.dispatchEvent(
+                new CustomEvent(name, eventOptions),
             )
         },
 

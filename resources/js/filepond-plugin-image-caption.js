@@ -33,9 +33,9 @@ export default function ({ addFilter, utils }) {
             const isInvalid = item.status === FileStatus.LOAD_ERROR
 
             // Append image caption input
-            root.ref.imagePreview = view.appendChildView(
+            root.ref.imageCaption = view.appendChildView(
                 view.createChildView(
-                    createView(addCaptionInputField(value, isInvalid, uuid)),
+                    createView(addCaptionInputField(value, isInvalid, uuid, id)),
                     {
                         id,
                     },
@@ -78,8 +78,8 @@ function addCaptionInputField(value, isInvalid, uuid, id) {
         tag: 'input',
         ignoreRect: true,
         create: function create({ root }) {
-            // Input name
-            //root.element.setAttribute('name', 'captions['+uuid+']');
+            // Ensure type is text
+            root.element.setAttribute('type', 'text')
 
             // Placeholder
             const placeholder = root.query('GET_IMAGE_CAPTION_PLACEHOLDER')
@@ -109,17 +109,34 @@ function addCaptionInputField(value, isInvalid, uuid, id) {
                 }
             })
 
-            // Registrar la función para actualizar el estado
-            if (uuid) {
-                root.element.setAttribute(
-                    'wire:model.defer',
-                    `data.captions.${uuid}.caption`,
-                )
+            // Store internal item id and file key on input element
+            if (id) {
+                root.element.dataset.filepondId = id
             }
 
-            if (!uuid) {
-                root.element.setAttribute('disabled', 'disabled')
+            if (uuid) {
+                root.element.dataset.fileKey = uuid
             }
+
+            // Input is always enabled so user can write captions immediately
+
+            // Dispatch custom event on input for Livewire integration
+            // The parent Alpine component listens for this and syncs via $wire.set()
+            root.element.addEventListener('input', function (e) {
+                const fileKey = root.element.dataset.fileKey
+                if (fileKey) {
+                    root.element.dispatchEvent(
+                        new CustomEvent('caption-change', {
+                            bubbles: true,
+                            detail: {
+                                fileKey,
+                                value: e.target.value,
+                            },
+                        }),
+                    )
+                }
+            })
+
             // Value
             if (value) {
                 root.element.value = value

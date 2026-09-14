@@ -116,15 +116,6 @@
                             file,
                             () => {
                                 success(fileKey)
-                                const listItem = Array.from(document.querySelectorAll('li.filepond--item'))
-                                    .find(li => li.querySelector('legend')?.textContent.trim() === file.name);
-                                if (listItem) {
-                                    const input = listItem.querySelector('input.filepond--image-caption-input');
-                                    if (input) {
-                                        input.setAttribute('wire:model.defer', `data.captions.${fileKey}.caption`);
-                                        input.removeAttribute('disabled');
-                                    }
-                                }
                             },
                             error,
                             (progressEvent) => {
