@@ -13,7 +13,7 @@ use Throwable;
 class CustomAttributeFileUpload extends FileUpload
 {
     /** @var view-string */
-    protected string $view = 'filament-custom-attribute-file-upload::custom-attribute-file-upload'; // @phpstan-ignore property.defaultValue
+    protected string $view = 'filament-custom-attribute-file-upload::custom-attribute-file-upload';
 
     protected function setUp(): void
     {
